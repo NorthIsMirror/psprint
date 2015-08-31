@@ -37,7 +37,7 @@ bool isNumeric(char *input) {
     int i = 0;
 
     while(input[i]) {
-        if(!isdigit(input[i])) {
+        if(!std::isdigit(input[i])) {
             return false;
         }
         i++;
@@ -164,10 +164,6 @@ void printUsage() {
 
 int main(int argc, char **argv) {
     cout << "test a printer and its trays." << endl;
-
-    cout << argc << endl;
-
-    cout << argv[0] << endl;
 
     if(argc != 4) {
         printUsage();
