@@ -33,7 +33,20 @@
 
 using namespace std;
 
-int rawPrint(LPTSTR printerName, LPBYTE data, DWORD count, int tray) {
+bool isNumeric(char *input) {
+    int i = 0;
+
+    while(input[i]) {
+        if(!isdigit(input[i])) {
+            return false;
+        }
+        i++;
+    }
+
+    return true;
+}
+
+int rawPrint(LPTSTR printerName, LPBYTE data, DWORD count, LPSTR printJobTitle) {
     HANDLE hPrinter;
     DOC_INFO_1 docInfo;
     DWORD job;
@@ -44,7 +57,7 @@ int rawPrint(LPTSTR printerName, LPBYTE data, DWORD count, int tray) {
         return -1;
     }
 
-    docInfo.pDocName = (LPSTR) ("TEST TRAY " + std::to_string(tray)).c_str();
+    docInfo.pDocName = printJobTitle;
     docInfo.pOutputFile = nullptr;
     docInfo.pDatatype = (LPSTR) "RAW";
 
@@ -134,13 +147,40 @@ string generateData(int tray, string username) {
 
 void print(string username, int tray, string printer) {
     string data = generateData(tray, username);
-    rawPrint((LPTSTR) printer.c_str(), (LPBYTE) data.c_str(), (DWORD) data.length(), tray);
+    rawPrint((LPTSTR) printer.c_str(),
+             (LPBYTE) data.c_str(),
+             (DWORD) data.length(),
+             (LPSTR) ("TEST TRAY " + std::to_string(tray)).c_str()
+    );
+}
+
+void printUsage() {
+    cout << "usage: psprint printer tray_nr user\n";
+    cout << "       printer: a unc path to an installed printer on the system.\n";
+    cout << "       tray_nr: the tray to create a test page for. at the moment A4 is printed.\n";
+    cout << "       user: this user will be declared the owner of this print job in the PJL header.\n";
+    cout << endl;
 }
 
 int main(int argc, char **argv) {
     cout << "test a printer and its trays." << endl;
 
-    print("xyz", 3, "\\\\server\\printer");
+    cout << argc << endl;
+
+    cout << argv[0] << endl;
+
+    if(argc != 4) {
+        printUsage();
+        return -1;
+    }
+
+    if(!isNumeric(argv[2])) {
+        printUsage();
+        return -2;
+    }
+
+    print(argv[3], std::stoi(argv[2]), argv[1]);
 
     return 0;
 }
+
